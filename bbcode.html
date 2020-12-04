@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>MADEINDREAMS.CA/BBCODE</title>
+    </head>
+    <body>
+       
+<style>
+
+/*BB CODES CSS*/
+.editNote {
+    margin: 5px;
+    padding: 5px;
+    background-color: #f8e75e;
+}
+.editNoteHead {
+   font-size: 16px;
+   color: #e41a1a;
+   border-bottom: 1px solid #212121
+}
+.editNoteC {
+    text-align:center;
+}
+.editNoteR {
+    text-align:right;
+}
+.editNoteL {
+    text-align:left;
+}
+.editBold {
+    font-weight: 900;
+}
+.editItalic {
+    font-style: italic;
+}
+.editUnderline {
+   text-decoration: underline;
+}
+.editDic {
+   font-style: italic; 
+   color: #0567d6;
+   font-size: 120%;
+   cursor: pointer;
+}
+</style> 
+<textarea id="bbco">123456789[b]123456789[/b]123456789[i]123456789[/i]
+123456789[b]123456789[/b]123456789[N]123456789[dic]123456789[/dic]123456789[/N]
+ </textarea>
+  
+<script>
+
+s= document.getElementById('bbco').value;
+
+//s = "123456789[b]123456789[/b]123456789[i]123456789[/i]\n123456789[b]123456789[/b]123456789[N]123456789[dic]123456789[/dic]123456789[/N]";
+ 
+document.write('<pre>'+s+'</pre>');
+document.write('<br><br>')
+ data = BBcoder(s);
+ document.write(data);
+ 
+ function BBcoder(input){
+    
+/* MAXIMUM BBCODE LENGTH [/1234] = 7    */ var bbMaxLen = 7;     
+/* next token global position           */ var nex  = 0;       
+/* Cursor                               */ var curseur = 0;               
+/* loop Tracker                         */ var loop = 0;           
+/* DATA ARRAY INCREMENT                 */ var x = 0;           
+/* BBCODE ERROR Increment               */ var e = 0;
+/* STRING STORAGE BUFFER  	            */ var sting = "" ;   
+/* BBCODE ERROR STORAGE	                */ var bberror = [] ;  
+/* text between bbcode	                */ var data = [] ;     
+/* bbcode start & end	                */ var bbcode = [];    
+/* output bbcode to html or	            */ var output = "" ; 
+/* full output size                     */ var len = input.length;
+/* End Of File or text                  */ var EOF = false ;  
+/* Token index                          */ var i = 0 ;  
+/* token in/out [	                    */ var tokin  = ["[",'\n'] ;    //<---------- /n come last in tokin
+/* token out ]	                        */ var tokout = ["]",'\n'] ;   
+
+   while(EOF===false){
+      
+	  if(loop===0){/////////////////////////// LOOP STARTS
+	    if(i===0){/////////////////////first token 
+	      string = input;
+	      nex = len
+	      }
+	    else{ ///////////////////////its next token
+          string = output;	  
+	      nex = output.length;;
+	      }
+	  }
+	  else{///////////////////////// LOOP CONTINUES
+	      nex = string.indexOf(tokin[i]); /////////////next token
+	    	if (nex === -1) { ///////////////// EOF
+			  nex = len;
+			   string = input.substr(curseur,len);
+			   output += string;
+			    //console.log(string);
+			   if(tokin.length-1<=i){ // Last Token
+			   //document.write('EOF');
+			      EOF = true;
+			      break; //////////////// BREAK LAST TOKEN AND LAST STRING
+				 }
+			   else{ ///IF NOT LAST TOKEN
+			      loop = 0; //RESET LOOP
+				   i++;  //SWITCH TOKEN/OUTPUT
+	             // nex = output[i]; 
+				 }  	   
+		 }  
+	  }
+	    nex = string.indexOf(tokin[i]); 
+	    string = input.substr(curseur,nex); /////// STORE TEXT   
+        console.log(string);		
+	    output += string;
+		curseur += string.length;
+		string = input.substr(curseur,len);//??
+		
+		spacer = 1;
+		if(tokin[i] === '\n'){ //// spacer to set cursor after token
+		  spacer = 2;
+		  nex = spacer;
+		}else{
+		nex = string.indexOf(tokout[i]); 
+		}
+	
+		console.log(tokin[i]);
+		spc = tokin.length; ///last token
+		
+		//console.log(spc);
+		BBCode = input.substr(curseur,nex+spacer); // we have bbcode
+		if(BBCode.length > bbMaxLen){  /////// IF BBCode is to long
+		 bberror[e] = BBCode ;
+		e++;
+		document.writeln('<span style="color:red"><---ERROR WITH YOUR BBCODE @ CHARACTER '+curseur+'</span>');
+		document.writeln(s);
+		break; //or not
+		}
+		else{ //// BBCODE IS GOOD
+		curseur += BBCode.length;
+	    console.log('-'+BBCode+'-');	
+		//var eobb = curseur+1;
+		 output +=(bbToHtml(BBCode));                       
+
+		loop++;
+		}
+		string = input.substr(curseur,len);
+
+    }
+	 
+	 output=output.replace(/\n/g, '<br/>');
+	return output;
+}
+ 
+	
+function bbToHtml(s){
+   var p,pairs = [ 
+                    //NOTE//
+   { "in": "[N]", "out": '<div class="editNote"><div class="editNoteHead">NOTE:</div>' },
+   { "in": "[/N]",  "out": '</div>' },
+                    //POSITIONNEMENT//
+   { "in": "[c]", "out": '<p class="editNoteC">' },
+   { "in": "[/c]",  "out": '</p>' },
+   { "in": "[r]", "out": '<p class="editNoteR">' },
+   { "in": "[/r]",  "out": '</p>' },
+   { "in": "[l]", "out": '<p class="editNoteL">' },
+   { "in": "[/l]",  "out": '</p>' },
+                   //STYLE DU TEXT//
+   { "in": "[b]", "out": '<span class="editBold">' },
+   { "in": "[/b]",  "out": '</span>' },
+   { "in": "[i]", "out": '<span class="editItalic">' },
+   { "in": "[/i]",  "out": '</span>' },
+   { "in": "[u]", "out": '<span class="editUnderline">' },
+   { "in": "[/u]",  "out": '</span>' },
+                   //DICTIONNAIRE///
+   { "in": "[dic]", "out": '<span class="editDic">' },
+   { "in": "[/dic]",  "out": '</span>' },
+
+    
+   { "in": "\n",  "out": '<br>' }
+   ];
+
+for (p in pairs) {
+        s = s.replace(pairs[p]["in"],pairs[p]["out"]);
+       
+}
+
+
+
+return s; 
+
+}
+	
+	
+
+	
+	
+</script>
+
+    </body>
+</html>
